@@ -15,8 +15,4 @@ login_manager.init_app(app)
 def home():
     return "Hello, World!"
 
-
-if __name__ == "__main__":
-    app.run(debug=True)
-
 from models import *
