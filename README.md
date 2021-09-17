@@ -1,6 +1,6 @@
 # hearatale-backend
 
-brew install mysql
+```brew install mysql
 mysql_secure_installation
 mysqld
 
@@ -18,3 +18,4 @@ create database hearatale;
 
 from flask import Flask
 python3.x run.py
+```
