@@ -1,18 +1,21 @@
-install mysql
-install python3.5+
+# hearatale-backend
 
-pip install flask
-pip install flask-login
-pip install flask-sqlalchemy
-pip install flask-mysqldb
+```brew install mysql
+mysql_secure_installation
+mysqld
 
-open mysql
-create a user with ```create user hearatale@localhost;```
-give privs to the table ```grant all privileges on hearatale.* to hearatale@localhost```
+pip3.8 install flask
+pip3.8 install flask-login
+pip3.8 install flask-sqlalchemy
+pip3.8 install flask-mysqldb
 
-`python3.6` or whatever version of python you have
+mysql -u root -p
+uninstall plugin validate_password;
+UNINSTALL COMPONENT 'file://component_validate_password';
+create user hearatale@localhost;
+grant all privileges on hearatale.* to hearatale@localhost;
+create database hearatale;
 
-```
-from hearatale import *
-db.create_all() # this creates all the tables
+from flask import Flask
+python3.x run.py
 ```
