@@ -1,6 +1,6 @@
 import bcrypt
 import uuid
-from hearatale import db, login_manager
+from hearatale import db, jwt
 from datetime import datetime
 import secrets
 
@@ -9,6 +9,7 @@ class Teacher(db.Model):
     __tablename__ = "teachers"
     uuid = db.Column(db.Unicode(length=128), primary_key=True, default=uuid.uuid1.__str__)
     username = db.Column(db.Unicode(length=128), unique=True)
+    hashed_password = db.Column(db.Unicode(length=128), unique=True)
     name = db.Column(db.Unicode(length=64), unique=True)
     email = db.Column(db.Unicode(length=128), unique=True)
     joined = db.Column(db.DateTime, default=datetime.utcnow)
@@ -30,7 +31,10 @@ class Teacher(db.Model):
         if u is None:
             return False
 
-        return u.check_password(password)
+        if u.check_password(password):
+            return u
+
+        return None
 
     @staticmethod
     def register(username, password, email):
@@ -41,13 +45,6 @@ class Teacher(db.Model):
         u.save()
 
         return True
-
-    @staticmethod
-    @login_manager.user_loader
-    def load_user(user_id):
-        t = Teacher.query.get(user_id)
-        if not t:
-            return Student.query.get(user_id)
 
 
 class Student(db.Model):
@@ -70,7 +67,7 @@ class Student(db.Model):
         if u is None:
             return False
 
-        return u.check_password(password)
+        return u
 
     @staticmethod
     def register(name):
@@ -81,3 +78,25 @@ class Student(db.Model):
         u.save()
 
         return True
+
+
+# Register a callback function that takes whatever object is passed in as the
+# identity when creating JWTs and converts it to a JSON serializable format.
+@jwt.user_identity_loader
+def user_identity_lookup(cls):
+    return cls.uuid
+
+
+# Register a callback function that loades a user from your database whenever
+# a protected route is accessed. This should return any python object on a
+# successful lookup, or None if the lookup failed for any reason (for example
+# if the user has been deleted from the database).
+@jwt.user_lookup_loader
+def user_lookup_callback(_jwt_header, jwt_data):
+    identity = jwt_data["sub"]
+    s = Student.query.filter_by(uuid=identity).one_or_none()
+    if s:
+        return s
+
+    t = Teacher.query.filter_by(uuid=identity).one_or_none()
+    return t
